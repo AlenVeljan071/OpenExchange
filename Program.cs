@@ -16,14 +16,14 @@ builder.Services.AddDbContext<DbInteractor>(options => { options.UseSqlServer(bu
 builder.Services.Configure<Openexchangerates>(builder.Configuration.GetSection("Openexchangerates"));
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "PrelazSaNET5naNET6pattern", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "OpenExchange", Version = "v1" });
 });
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "PrelazSaNET5naNET6pattern v1"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "OpenExchange v1"));
 }
 app.UseHttpsRedirection();
 
