@@ -65,12 +65,11 @@ namespace OpenExchange.Controllers
         }
 
         [HttpGet("byDate")]
-        public async Task<ActionResult<IEnumerable<RootEx>>> GetByDateRate()
+        public async Task<ActionResult<IEnumerable<RootEx>>> GetByDateRate(DateTime fromDate, DateTime toDate)
         {
-            DateTime? dateFrom = new DateTime(2022, 3, 25);
-            DateTime? dateTo = new DateTime(2022, 3, 31);
-
-            return await _context.RootsExs.Include(x => x.Rates).Where(x => x.Rates.DateRate >= dateFrom && x.Rates.DateRate <= dateTo).ToListAsync();
+         
+           var dateTo = toDate.AddDays(1);
+           return await _context.RootsExs.Include(x => x.Rates).Where(x => x.Rates.DateRate >= fromDate && x.Rates.DateRate <= dateTo).ToListAsync();
         }
 
         // response sa API - Ne mogu da pristupim endpointu sa free nalogom
@@ -132,29 +131,30 @@ namespace OpenExchange.Controllers
         [HttpGet("percent-diference")]
         public async Task<ActionResult<string>> GetExchangeRateSrb()
         {
+           
+                try
+                {
+                    var client = new HttpClient();
+                    client.BaseAddress = new Uri("https://kurs.resenje.org/api/v1/");
+                    var response = await client.GetAsync("currencies/usd/rates/today");
+                    var stringResult = await response.Content.ReadAsStringAsync();
+                    var deserializeResponse = JsonConvert.DeserializeObject<BankSrb>(stringResult);
 
-            try
-            {
-                var client = new HttpClient();
-                client.BaseAddress = new Uri("https://kurs.resenje.org/api/v1/");
-                var response = await client.GetAsync("currencies/usd/rates/today");
-                var stringResult = await response.Content.ReadAsStringAsync();
-                var deserializeResponse = JsonConvert.DeserializeObject<BankSrb>(stringResult);
-
-                var client2 = new HttpClient();
-                client2.BaseAddress = new Uri("https://openexchangerates.org/api/");
-                var responseOpenEx = await client2.GetAsync($"latest.json?app_id={ApiKey}&symbols=RSD");
-                var stringResultOpenEx = await responseOpenEx.Content.ReadAsStringAsync();
-                var deserializeResponseEx = JsonConvert.DeserializeObject<RootEx>(stringResultOpenEx);
-                double openEx = deserializeResponseEx.Rates.Rsd;
-                double openSr = deserializeResponse.Exchange_middle;
-                var result = Percent(openEx, openSr);
-                return Ok(Math.Round(result, 3) + " %");
-            }
-            catch
-            {
-                return BadRequest();
-            }
+                    var client2 = new HttpClient();
+                    client.BaseAddress = new Uri("https://openexchangerates.org/api/");
+                    var responseOpenEx = await client.GetAsync($"latest.json?app_id={ApiKey}&symbols=RSD");
+                    var stringResultOpenEx = await responseOpenEx.Content.ReadAsStringAsync();
+                    var deserializeResponseEx = JsonConvert.DeserializeObject<RootEx>(stringResultOpenEx);
+                    double openEx = deserializeResponseEx.Rates.Rsd;
+                    double openSr = deserializeResponse.Exchange_middle;
+                    var result = Percent(openEx, openSr);
+                    return Ok(Math.Round(result, 3) + " %");
+                }
+                catch
+                {
+                    return BadRequest();
+                }
+           
         }
         private double Percent(double x, double y)
         {
