@@ -141,8 +141,8 @@ namespace OpenExchange.Controllers
                     var deserializeResponse = JsonConvert.DeserializeObject<BankSrb>(stringResult);
 
                     var client2 = new HttpClient();
-                    client.BaseAddress = new Uri("https://openexchangerates.org/api/");
-                    var responseOpenEx = await client.GetAsync($"latest.json?app_id={ApiKey}&symbols=RSD");
+                    client2.BaseAddress = new Uri("https://openexchangerates.org/api/");
+                    var responseOpenEx = await client2.GetAsync($"latest.json?app_id={ApiKey}&symbols=RSD");
                     var stringResultOpenEx = await responseOpenEx.Content.ReadAsStringAsync();
                     var deserializeResponseEx = JsonConvert.DeserializeObject<RootEx>(stringResultOpenEx);
                     double openEx = deserializeResponseEx.Rates.Rsd;
